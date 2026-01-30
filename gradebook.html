@@ -595,34 +595,17 @@
             doc.text(`Tanggal Cetak: ${timestamp}`, 14, 45);
 
             // Construct Headers
-            // Flattened structure: No | Nama | T1 | T2... | V1... | C1... | U1... | UAS | Akhir | Pred
-            const headers = ['No', 'Nama Siswa'];
-            
-            state.columns.tugas.forEach((c) => headers.push(`Tgs ${c.label}`));
-            state.columns.vocab.forEach((c) => headers.push(`Voc ${c.label}`));
-            state.columns.percakapan.forEach((c) => headers.push(`Ckp ${c.label}`));
-            state.columns.uh.forEach((c) => headers.push(`UH ${c.label}`));
-            
-            headers.push('UAS');
-            headers.push('Nilai Akhir');
-            headers.push('Predikat');
+            const headers = ['No', 'Nama Siswa', 'Nilai Akhir', 'Predikat'];
 
             // Construct Data
             const filteredStudents = state.students
                 .filter(s => s.class === state.selectedClass)
-                .sort((a, b) => a.name.localeCompare(b.name)); // Sort alphabetically for PDF
+                .sort((a, b) => a.name.localeCompare(b.name));
 
             const body = filteredStudents.map((s, i) => {
                 const row = [i + 1, s.name];
                 
-                // Add scores based on column order
-                state.columns.tugas.forEach(col => row.push(s.scores[col.id] || 0));
-                state.columns.vocab.forEach(col => row.push(s.scores[col.id] || 0));
-                state.columns.percakapan.forEach(col => row.push(s.scores[col.id] || 0));
-                state.columns.uh.forEach(col => row.push(s.scores[col.id] || 0));
-                
-                row.push(s.scores.uas || 0);
-                
+                // Calculate average but don't add individual scores to row
                 const avg = calculateAverage(s.scores);
                 const grade = getGrade(avg);
                 
