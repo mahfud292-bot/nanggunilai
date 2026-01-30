@@ -274,31 +274,31 @@
             uh: [{ id: 'uh_1', label: '1' }]
         };
 
-        // --- COLOR STYLES CONFIGURATION ---
+        // --- COLOR STYLES CONFIGURATION (UPDATED for STRONGER COLORS) ---
         const CATEGORY_STYLES = {
             tugas: {
-                header: 'bg-blue-100 text-blue-800 border-blue-200',
-                subHeader: 'bg-blue-50 text-blue-700 border-blue-200',
-                inputFocus: 'focus:border-blue-500 focus:ring-blue-500',
-                cell: 'bg-blue-50/40' // Warna lebih pekat
+                header: 'bg-blue-200 text-blue-900 border-blue-300',
+                subHeader: 'bg-blue-100 text-blue-800 border-blue-300',
+                inputFocus: 'focus:border-blue-600 focus:ring-blue-600',
+                cell: 'bg-blue-50' // Warna solid lebih jelas
             },
             vocab: {
-                header: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-                subHeader: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-                inputFocus: 'focus:border-emerald-500 focus:ring-emerald-500',
-                cell: 'bg-emerald-50/40' // Warna lebih pekat
+                header: 'bg-emerald-200 text-emerald-900 border-emerald-300',
+                subHeader: 'bg-emerald-100 text-emerald-800 border-emerald-300',
+                inputFocus: 'focus:border-emerald-600 focus:ring-emerald-600',
+                cell: 'bg-emerald-50' // Warna solid lebih jelas
             },
             percakapan: {
-                header: 'bg-amber-100 text-amber-800 border-amber-200',
-                subHeader: 'bg-amber-50 text-amber-700 border-amber-200',
-                inputFocus: 'focus:border-amber-500 focus:ring-amber-500',
-                cell: 'bg-amber-50/40' // Warna lebih pekat
+                header: 'bg-orange-200 text-orange-900 border-orange-300',
+                subHeader: 'bg-orange-100 text-orange-800 border-orange-300',
+                inputFocus: 'focus:border-orange-600 focus:ring-orange-600',
+                cell: 'bg-orange-50' // Warna solid lebih jelas
             },
             uh: {
-                header: 'bg-rose-100 text-rose-800 border-rose-200',
-                subHeader: 'bg-rose-50 text-rose-700 border-rose-200',
-                inputFocus: 'focus:border-rose-500 focus:ring-rose-500',
-                cell: 'bg-rose-50/40' // Warna lebih pekat
+                header: 'bg-rose-200 text-rose-900 border-rose-300',
+                subHeader: 'bg-rose-100 text-rose-800 border-rose-300',
+                inputFocus: 'focus:border-rose-600 focus:ring-rose-600',
+                cell: 'bg-rose-50' // Warna solid lebih jelas
             }
         };
 
@@ -451,10 +451,11 @@
             headerRow1 += renderCatHeader('Percakapan', 'mic', 'percakapan', percakapan);
             headerRow1 += renderCatHeader('UH', 'pen-tool', 'uh', uh);
 
+            // UPDATED HEADER: UAS with Stronger Violet Theme
             headerRow1 += `
-                    <th rowspan="2" class="px-4 py-4 font-semibold text-center w-24 border-b border-violet-200 bg-violet-100 text-violet-800">
+                    <th rowspan="2" class="px-4 py-4 font-semibold text-center w-24 border-b border-violet-300 bg-violet-200 text-violet-900">
                        <div class="flex flex-col items-center gap-1">
-                        <i data-lucide="graduation-cap" class="w-4 h-4 text-violet-600"></i>
+                        <i data-lucide="graduation-cap" class="w-4 h-4 text-violet-700"></i>
                         <span>UAS</span>
                       </div>
                     </th>
@@ -572,10 +573,10 @@
                         ${createInputCells('percakapan', percakapan)}
                         ${createInputCells('uh', uh)}
 
-                        <td class="px-2 py-3 text-center bg-violet-50/40">
+                        <td class="px-2 py-3 text-center bg-violet-50">
                              <input type="number" min="0" max="100" value="${student.scores.uas || 0}" 
                                 onchange="updateScore(${student.id}, 'uas', this.value)"
-                                class="w-14 text-center py-1 rounded border border-violet-200 focus:border-violet-500 focus:ring-1 focus:ring-violet-500 bg-white/70 text-slate-800 font-medium">
+                                class="w-14 text-center py-1 rounded border border-violet-200 focus:border-violet-600 focus:ring-1 focus:ring-violet-600 bg-white/70 text-slate-800 font-medium">
                         </td>
 
                         <td class="px-6 py-3 text-center border-l border-slate-200">
