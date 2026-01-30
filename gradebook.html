@@ -274,7 +274,7 @@
             uh: [{ id: 'uh_1', label: '1' }]
         };
 
-        // --- COLOR STYLES CONFIGURATION (UPDATED for STRONGER COLORS) ---
+        // --- COLOR STYLES CONFIGURATION ---
         const CATEGORY_STYLES = {
             tugas: {
                 header: 'bg-blue-100 text-blue-800 border-blue-200',
@@ -302,9 +302,36 @@
             }
         };
 
+        // Initialize Class Columns (Separated per class)
+        const savedCols = JSON.parse(localStorage.getItem('gradebook_html_columns'));
+        let initialClassColumns = {};
+        
+        // Data Migration/Initialization Logic
+        if (savedCols && !savedCols.tugas) { 
+            // Already in new format (keyed by class)
+             if (Object.keys(savedCols).length > 0) {
+                 initialClassColumns = savedCols;
+             } else {
+                 CLASSES.forEach(c => initialClassColumns[c] = JSON.parse(JSON.stringify(INITIAL_COLUMNS)));
+             }
+        } else if (savedCols && savedCols.tugas) {
+            // Old format detected, migrate to all classes
+            CLASSES.forEach(c => initialClassColumns[c] = JSON.parse(JSON.stringify(savedCols)));
+        } else {
+            // Fresh start
+            CLASSES.forEach(c => initialClassColumns[c] = JSON.parse(JSON.stringify(INITIAL_COLUMNS)));
+        }
+
+        // Ensure every class exists
+        CLASSES.forEach(c => {
+            if (!initialClassColumns[c]) {
+                initialClassColumns[c] = JSON.parse(JSON.stringify(INITIAL_COLUMNS));
+            }
+        });
+
         let state = {
             students: JSON.parse(localStorage.getItem('gradebook_html_students')) || [],
-            columns: JSON.parse(localStorage.getItem('gradebook_html_columns')) || INITIAL_COLUMNS,
+            classColumns: initialClassColumns, // Store columns per class
             selectedClass: localStorage.getItem('gradebook_html_class') || "XI A",
             searchQuery: "",
             editingId: null,
@@ -315,17 +342,24 @@
 
         function saveData() {
             localStorage.setItem('gradebook_html_students', JSON.stringify(state.students));
-            localStorage.setItem('gradebook_html_columns', JSON.stringify(state.columns));
+            localStorage.setItem('gradebook_html_columns', JSON.stringify(state.classColumns));
             localStorage.setItem('gradebook_html_class', state.selectedClass);
             renderApp();
         }
 
+        function getCurrentColumns() {
+            return state.classColumns[state.selectedClass];
+        }
+
         function calculateAverage(scores) {
+            // Calculate average using the columns of the CURRENTLY selected class
+            // This assumes we are rendering/calculating for the active view.
+            const columns = getCurrentColumns();
             const categories = ['tugas', 'vocab', 'percakapan', 'uh'];
             let categorySums = [];
             
             categories.forEach(cat => {
-                const colIds = state.columns[cat].map(c => c.id);
+                const colIds = columns[cat].map(c => c.id);
                 const validScores = colIds.map(id => parseInt(scores[id] || 0));
                 const sum = validScores.reduce((a, b) => a + b, 0);
                 const avg = colIds.length > 0 ? sum / colIds.length : 0;
@@ -389,7 +423,8 @@
             const tbody = document.getElementById('table-body');
             
             // --- 1. RENDER HEADERS ---
-            const { tugas, vocab, percakapan, uh } = state.columns;
+            // Use columns specific to the selected class
+            const { tugas, vocab, percakapan, uh } = getCurrentColumns();
             
             let headerRow1 = `
                 <tr>
@@ -416,7 +451,6 @@
             headerRow1 += renderCatHeader('Percakapan', 'mic', 'percakapan', percakapan);
             headerRow1 += renderCatHeader('UH', 'pen-tool', 'uh', uh);
 
-            // UPDATED HEADER: UAS with Violet Theme
             headerRow1 += `
                     <th rowspan="2" class="px-4 py-4 font-semibold text-center w-24 border-b border-violet-200 bg-violet-100 text-violet-800">
                        <div class="flex flex-col items-center gap-1">
@@ -574,7 +608,6 @@
 
         async function downloadPDF() {
             const { jsPDF } = window.jspdf;
-            // UBAH DARI 'l' (Landscape) KE 'p' (Portrait)
             const doc = new jsPDF('p', 'mm', 'a4'); 
 
             // School Header
@@ -606,7 +639,6 @@
             const body = filteredStudents.map((s, i) => {
                 const row = [i + 1, s.name];
                 
-                // Calculate average but don't add individual scores to row
                 const avg = calculateAverage(s.scores);
                 const grade = getGrade(avg);
                 
@@ -623,13 +655,13 @@
                 startY: 50,
                 theme: 'grid',
                 styles: { 
-                    fontSize: 10, // Font sedikit diperbesar untuk Portrait
+                    fontSize: 10,
                     cellPadding: 3,
                     halign: 'center'
                 },
                 columnStyles: {
                     0: { cellWidth: 15 }, // No
-                    1: { halign: 'left' } // Nama (auto width mengisi sisa)
+                    1: { halign: 'left' } 
                 },
                 headStyles: { 
                     fillColor: [30, 41, 59], // Slate-800
@@ -663,35 +695,36 @@
             if (sIndex > -1) {
                 state.students[sIndex].scores[field] = num;
                 saveData();
-                // Focusing issue: re-rendering entire table loses focus. 
-                // For a simple HTML version, full re-render is easiest but causes UX issue.
-                // We will rely on onchange (triggers on blur/enter) so focus loss is acceptable.
             }
         }
 
         function addColumn(category) {
-            const currentCols = state.columns[category];
+            const columns = getCurrentColumns();
+            const currentCols = columns[category];
             const nextNum = currentCols.length + 1;
             const prefix = category === 'percakapan' ? 'cakap' : category;
             const newId = `${prefix}_${Date.now()}`;
             
-            state.columns[category].push({ id: newId, label: `${nextNum}` });
+            // Only update active class columns
+            currentCols.push({ id: newId, label: `${nextNum}` });
             saveData();
         }
 
         function removeColumn(category, colId) {
-            if (state.columns[category].length <= 1) {
+            const columns = getCurrentColumns();
+            if (columns[category].length <= 1) {
                 alert("Minimal harus ada 1 kolom nilai.");
                 return;
             }
             if(confirm("Hapus kolom ini? Nilai di dalamnya akan hilang.")) {
-                state.columns[category] = state.columns[category].filter(c => c.id !== colId);
+                columns[category] = columns[category].filter(c => c.id !== colId);
                 saveData();
             }
         }
 
         function renameColumn(category, colId) {
-            const col = state.columns[category].find(c => c.id === colId);
+            const columns = getCurrentColumns();
+            const col = columns[category].find(c => c.id === colId);
             if (col) {
                 const newLabel = prompt("Masukkan nama baru untuk kolom ini:", col.label);
                 if (newLabel !== null && newLabel.trim() !== "") {
@@ -720,7 +753,6 @@
         // UPDATED: More robust delete function
         function deleteStudent(id) {
             if(confirm("Yakin ingin menghapus siswa ini? Data akan hilang permanen.")) {
-                // Ensure type safety between number/string ID
                 state.students = state.students.filter(s => s.id != id);
                 saveData();
             }
@@ -730,7 +762,6 @@
             state.editingId = id;
             state.editNameValue = currentName;
             renderApp();
-            // Focus on input after render
             setTimeout(() => {
                 const input = document.getElementById(`edit-name-${id}`);
                 if(input) {
