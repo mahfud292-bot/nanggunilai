@@ -40,16 +40,22 @@
 </head>
 <body class="bg-slate-50 text-slate-800 h-screen flex overflow-hidden">
 
-    <!-- Sidebar -->
-    <aside id="sidebar" class="w-64 bg-white border-r border-slate-200 flex flex-col z-30 transition-transform duration-300 md:translate-x-0 -translate-x-full fixed md:relative h-full">
-        <div class="p-6 border-b border-slate-100 flex items-center gap-3">
-            <div class="bg-indigo-600 p-2 rounded-lg">
-                <i data-lucide="graduation-cap" class="text-white w-6 h-6"></i>
+    <!-- Sidebar (Hidden by default on all screens) -->
+    <aside id="sidebar" class="w-64 bg-white border-r border-slate-200 flex flex-col z-40 transition-transform duration-300 -translate-x-full fixed h-full shadow-2xl">
+        <div class="p-6 border-b border-slate-100 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="bg-indigo-600 p-2 rounded-lg">
+                    <i data-lucide="graduation-cap" class="text-white w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg text-slate-900 leading-tight">EduGrade</h1>
+                    <p class="text-xs text-slate-500 font-medium">Digital Gradebook</p>
+                </div>
             </div>
-            <div>
-                <h1 class="font-bold text-lg text-slate-900 leading-tight">EduGrade</h1>
-                <p class="text-xs text-slate-500 font-medium">Digital Gradebook</p>
-            </div>
+            <!-- Tombol Tutup Sidebar -->
+            <button onclick="toggleSidebar()" class="text-slate-400 hover:text-slate-600">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
         </div>
 
         <div class="flex-1 overflow-y-auto p-4">
@@ -60,8 +66,8 @@
         </div>
     </aside>
 
-    <!-- Overlay for mobile sidebar -->
-    <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-20 hidden md:hidden"></div>
+    <!-- Overlay (Visible on all screens when sidebar open) -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-30 hidden transition-opacity"></div>
 
     <!-- Main Content -->
     <main class="flex-1 flex flex-col h-full overflow-hidden relative w-full">
@@ -72,13 +78,13 @@
             <div class="absolute top-0 right-0 w-64 h-64 bg-indigo-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -translate-y-1/2 translate-x-1/2"></div>
             <div class="absolute bottom-0 left-0 w-64 h-64 bg-blue-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 translate-y-1/2 -translate-x-1/2"></div>
 
-            <div class="relative px-6 py-8"> <!-- Added padding top/bottom -->
-                <!-- Layout Changed: Removed flex-row, now always flex-col -->
+            <div class="relative px-6 py-8"> 
                 <div class="flex flex-col gap-6">
                     
                     <!-- Top Section: Menu & Text Info -->
                     <div class="flex items-start gap-4">
-                        <button id="menu-btn" class="md:hidden p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg mt-1">
+                        <!-- Menu Button (Visible on all screens) -->
+                        <button id="menu-btn" class="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg mt-1 transition-colors" title="Buka Daftar Kelas">
                             <i data-lucide="menu" class="w-6 h-6"></i>
                         </button>
                         <div class="flex-1">
@@ -125,9 +131,8 @@
         </header>
 
         <!-- Stats Bar -->
-        <!-- Changed to grid-cols-1 to match stacked look in screenshot -->
         <div class="px-6 py-4 grid grid-cols-1 gap-4 shrink-0">
-            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex items-center gap-4"> <!-- Increased padding -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex items-center gap-4"> 
                 <div class="p-4 bg-blue-50 text-blue-600 rounded-xl">
                     <i data-lucide="users" class="w-8 h-8"></i>
                 </div>
@@ -272,7 +277,7 @@
                 }`;
                 btn.onclick = () => {
                     state.selectedClass = cls;
-                    if(window.innerWidth < 768) toggleSidebar(); // Close sidebar on mobile
+                    toggleSidebar(); // Auto-hide sidebar after selection
                     saveData();
                 };
                 
@@ -670,7 +675,7 @@
             document.getElementById('add-modal').classList.add('hidden');
         }
         
-        // Sidebar Toggle for Mobile
+        // Sidebar Toggle for All Devices (Drawer style)
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebar-overlay');
         function toggleSidebar() {
